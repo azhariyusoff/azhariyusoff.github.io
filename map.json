@@ -1,0 +1,68 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  
+  "title": {
+    "text": "Global Population",
+    "subtitle": [
+      "Population of each country",
+      "Source: World Bank 2024",
+      ""
+    ],
+    "fontSize": 16,
+    "subtitleFontSize": 12,
+    "subtitleFontStyle": "italic",
+    "anchor": "middle"
+  },
+
+  "description": "2021 World Bank data, GDP per capita in current international $ and converted to purchasing power parity. Grey countries have missing data.",
+
+  "data": {
+    "url": "https://raw.githubusercontent.com/EconomicsObservatory/courses/main/datasets/advanced/map_world.geojson",
+    "format": {"property": "features"}
+  },
+
+  "width": 600,
+  "height": 330,
+
+  "transform": [
+    {
+      "lookup": "properties.ISO3",
+      "from": {
+        "key": "ISO",
+        "fields": ["Country Name", "Value"],
+        "data": {
+          "url": "https://raw.githubusercontent.com/azhariyusoff/azhariyusoff.github.io/main/population_worldbank.csv"
+        }
+      }
+    }
+  ],
+
+  "projection": {
+    "type": "naturalEarth1",
+    "scale": 125,
+    "translate": [285, 180]
+  },
+  "mark": {
+    "type": "geoshape",
+    "stroke": "white",
+    "strokeWidth": 0.3
+  },
+
+  "encoding": {
+    "color": {
+      "field": "Value",
+      "type": "quantitative",
+      "condition": {
+        "value": "lightgrey",
+        "test": "!datum['Value']"
+      },
+      "legend": {"title": "", "format": ",d"},
+      "scale": {"type": "log", "scheme": "inferno", "reverse": true}
+    },
+
+    "tooltip": [
+      {"field": "properties.COUNTRY", "title": "Country"},
+      {"field": "Value", "title": "", "format": ",d"}
+    ]
+  }
+}

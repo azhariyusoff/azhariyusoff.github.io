@@ -1,189 +1,48 @@
-{
-  "$schema": "https://vega.github.io/schema/vega/v5.json",
-  "description": "Coronavirus cases",
-  "background": "white",
-  "padding": 5,
-  "width": 550,
-  "height": 350,
-  "title": {
-    "text": "CPI - sources of inflation",
-    "subtitle": "Contributions to CPI all items by sub series",
-    "subtitleFontStyle": "italic",
-    "subtitleFontSize": 10,
-    "anchor": "start",
-    "color": "black"
+{ "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+
+"title": {
+  "text": "Gun deaths and income - US states",
+  "subtitle":["Median income (x), and firearm deaths per 100k population (y)",""],
+  "subtitleFontStyle":"italic",
+  "subtitleFontSize":10,
+  "anchor": "start",
+  "color": "black"
+},
+
+  "description": "Various US measures state by state",
+
+"data": {
+  "url": "https://raw.githubusercontent.com/EconomicsObservatory/courses/main/datasets/advanced/usa_socioEconomic.csv",
+    "format":{"type":"csv"}},
+
+  "mark": {
+    "type":"circle",
+    "size":150,
+    "color":"rgb(0,67,167)",
+    "opacity":0.6
   },
-  "style": "cell",
-  "data": [
-    {"name": "pickSeries_store"},
-    {
-      "name": "source_0",
-      "url": "https://raw.githubusercontent.com/RDeconomist/teaching2/main/cpiContributions.csv",
-      "format": {"type": "csv", "parse": {"Date": "date"}, "delimiter": ","},
-      "transform": [
-        {
-          "type": "filter",
-          "expr": "!(length(data(\"pickSeries_store\"))) || (vlSelectionTest(\"pickSeries_store\", datum))"
-        },
-        {
-          "type": "stack",
-          "groupby": ["Date"],
-          "field": "Value",
-          "sort": {"field": ["series"], "order": ["descending"]},
-          "as": ["Value_start", "Value_end"],
-          "offset": "zero"
-        },
-        {
-          "type": "filter",
-          "expr": "(isDate(datum[\"Date\"]) || (isValid(datum[\"Date\"]) && isFinite(+datum[\"Date\"]))) && isValid(datum[\"Value\"]) && isFinite(+datum[\"Value\"])"
-        }
-      ]
-    }
-  ],
-  "signals": [
-    {
-      "name": "unit",
-      "value": {},
-      "on": [
-        {"events": "mousemove", "update": "isTuple(group()) ? group() : unit"}
-      ]
-    },
-    {
-      "name": "pickSeries_series",
-      "value": null,
-      "bind": {
-        "input": "select",
-        "options": [
-          null,
-          "AlcoholTobacco",
-          "ClothingFootwear",
-          "Communication",
-          "Education",
-          "Food",
-          "FurnitureHousehold",
-          "Health",
-          "HousingHouseService",
-          "Misc",
-          "RecreationCulture",
-          "RestaurantsHotels",
-          "Transport"
-        ],
-        "name": "Pick a series: "
+  
+  "height": 300,
+  "width": 400,
+
+  "encoding": {
+    "x": {
+      "field": "medIncome",
+      "type": "quantitative",
+      "scale": {"domain": [40000, 80000]},
+      "axis": {
+        "title": "Median Income"
       }
     },
-    {
-      "name": "pickSeries",
-      "update": "vlSelectionResolve(\"pickSeries_store\", \"union\")"
-    },
-    {
-      "name": "pickSeries_tuple",
-      "update": "pickSeries_series !== null ? {fields: pickSeries_tuple_fields, values: [pickSeries_series]} : null"
-    },
-    {
-      "name": "pickSeries_tuple_fields",
-      "value": [{"type": "E", "field": "series"}]
-    },
-    {
-      "name": "pickSeries_modify",
-      "on": [
-        {
-          "events": {"signal": "pickSeries_tuple"},
-          "update": "modify(\"pickSeries_store\", pickSeries_tuple, true)"
-        }
-      ]
-    }
-  ],
-  "marks": [
-    {
-      "name": "marks",
-      "type": "rect",
-      "style": ["bar"],
-      "interactive": true,
-      "from": {"data": "source_0"},
-      "encode": {
-        "update": {
-          "width": {"value": 3},
-          "fill": {"scale": "color", "field": "series"},
-          "ariaRoleDescription": {"value": "bar"},
-          "description": {
-            "signal": "\"Date: \" + (timeFormat(datum[\"Date\"], '%b %d, %Y')) + \"; Value: \" + (format(datum[\"Value\"], \"\")) + \"; series: \" + (isValid(datum[\"series\"]) ? datum[\"series\"] : \"\"+datum[\"series\"])"
-          },
-          "xc": {"scale": "x", "field": "Date"},
-          "y": {"scale": "y", "field": "Value_end"},
-          "y2": {"scale": "y", "field": "Value_start"}
-        }
+    "y": {
+      "field": "FirearmDeaths", 
+      "type": "quantitative",
+      "axis": {
+        "title": "Firearm Deaths"
       }
-    }
-  ],
-  "scales": [
-    {
-      "name": "x",
-      "type": "time",
-      "domain": {"data": "source_0", "field": "Date"},
-      "range": [0, {"signal": "width"}],
-      "padding": 5
     },
-    {
-      "name": "y",
-      "type": "linear",
-      "domain": {"data": "source_0", "fields": ["Value_start", "Value_end"]},
-      "range": [{"signal": "height"}, 0],
-      "nice": true,
-      "zero": true
-    },
-    {
-      "name": "color",
-      "type": "ordinal",
-      "domain": {"data": "source_0", "field": "series", "sort": true},
-      "range": {"scheme": "inferno"}
-    }
-  ],
-  "axes": [
-    {
-      "scale": "x",
-      "orient": "bottom",
-      "gridScale": "y",
-      "grid": true,
-      "tickCount": {"signal": "ceil(width/40)"},
-      "domain": false,
-      "labels": false,
-      "aria": false,
-      "maxExtent": 0,
-      "minExtent": 0,
-      "ticks": false,
-      "zindex": 0
-    },
-    {
-      "scale": "y",
-      "orient": "left",
-      "gridScale": "x",
-      "grid": true,
-      "tickCount": {"signal": "ceil(height/40)"},
-      "domain": false,
-      "labels": false,
-      "aria": false,
-      "maxExtent": 0,
-      "minExtent": 0,
-      "ticks": false,
-      "zindex": 0
-    },
-    {
-      "scale": "x",
-      "orient": "bottom",
-      "grid": false,
-      "labelFlush": true,
-      "labelOverlap": true,
-      "tickCount": {"signal": "ceil(width/40)"},
-      "zindex": 0
-    },
-    {
-      "scale": "y",
-      "orient": "left",
-      "grid": false,
-      "labelOverlap": true,
-      "tickCount": {"signal": "ceil(height/40)"},
-      "zindex": 0
-    }
-  ],
-  "legends": [{"orient": "right", "fill": "color", "symbolType": "square"}]
+   "tooltip": [
+      {"field": "State"}
+   ]
+  }
 }
